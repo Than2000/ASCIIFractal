@@ -447,15 +447,16 @@ vtcSierpinski gd v@(V2 x y)
   | x<0 || x>1 || y<0 || y>1 = minShadeChar
   | any (withinRange gd v) $ truncatedList gd = maxShadeChar
   | otherwise = minShadeChar
-truncatedList gd = take iters' $ drop iters' sierpinskiList'
+truncatedList gd = take len $ sierpinskiList'
     where iters' = 10 * (getIters gd)
+          len = length randList
 withinRange gd (V2 x1 y1) (V2 x2 y2) = abs (x2-x1) <= width && abs (y2-y1) <= height
     where (width, height) = (pxlW gd, pxlH gd)
 
-sierpinskiList :: Vector2 -> [Vector2]
-sierpinskiList v = v : (sierpinskiList . fst $ nextSierpinski (v, 2))
+sierpinskiList :: (Vector2, Int) -> [Vector2]
+sierpinskiList (v, n) = v : (sierpinskiList $ nextSierpinski (v, n))
 
-sierpinskiList' = sierpinskiList (V2 0.5 0.5) --Initial vector
+sierpinskiList' = sierpinskiList (V2 0.5 0.5, 0) --Initial values
 
 nextSierpinski :: (Vector2, Int) -> (Vector2, Int)
 nextSierpinski (v@(V2 x y), n)
