@@ -21,8 +21,6 @@ data GlobalData = GD { getWindowSize :: (Int, Int),
                        getAxesShown :: Bool,
                        getVectToChar :: VectToChar}
 
-type CmdDictionary a = [(StrCommand, (a, ArgDescription, CmdDescription))]
-
 
 
 type Matrix = (Double, Double, Double, Double)
@@ -449,23 +447,30 @@ vtcSierpinski gd v@(V2 x y)
   | x<0 || x>1 || y<0 || y>1 = minShadeChar
   | any (withinRange gd v) $ truncatedList gd = maxShadeChar
   | otherwise = minShadeChar
-truncatedList gd = take iters $ drop iters sierpinskiList'
+truncatedList gd = take iters' $ drop iters' sierpinskiList'
     where iters' = 10 * (getIters gd)
 withinRange gd (V2 x1 y1) (V2 x2 y2) = abs (x2-x1) <= width && abs (y2-y1) <= height
     where (width, height) = (pxlW gd, pxlH gd)
 
-sierpinskiList :: Vector2 -> a -> [Vector2]
+sierpinskiList :: Vector2 -> [Vector2]
 sierpinskiList v = v : (sierpinskiList . fst $ nextSierpinski (v, 2))
 
-sierpinskiList' = sierpinskiList (V2 0.98356032478956 0.123845769574862)
+sierpinskiList' = sierpinskiList (V2 0.5 0.5) --Initial vector
 
 nextSierpinski :: (Vector2, Int) -> (Vector2, Int)
 nextSierpinski (v@(V2 x y), n)
   | rand n `mod` 3 == 0 = (applyTransformation (trans0) v, n+1)
   | rand n `mod` 3 == 1 = (applyTransformation (trans1) v, n+1)
-  | otherwise = (applyTransformation (trans2) v, n+1)
-  where trans0 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0 0)
-        trans1 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.5 0)
-        trans2 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.25 ((sqrt 3)/4))
+  | rand n `mod` 3 == 2 = (applyTransformation (trans2) v, n+1)
+
+trans0 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0 0)
+trans1 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.5 0)
+trans2 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.25 ((sqrt 3)/4))
 
 
+--WIP - Should generate a pseudorandom number, 0..2
+rand :: Int -> Int
+rand n = randList !! n
+
+
+randList = [3,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,2,7,9,5,0,2,8,8,4,1,9,7]
