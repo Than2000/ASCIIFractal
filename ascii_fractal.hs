@@ -21,10 +21,15 @@ data GlobalData = GD { getWindowSize :: (Int, Int),
                        getAxesShown :: Bool,
                        getVectToChar :: VectToChar}
 
+type CmdDictionary a = [(StrCommand, (a, ArgDescription, CmdDescription))]
+
+
+
 type Matrix = (Double, Double, Double, Double)
 type Args = [String]
 type StrCommand = String
 type ArgDescription = String
+type CmdDescription = String
 type Command = GlobalData -> Args -> IO ()
 type PlotCommand = GlobalData -> Args -> Either (IO ()) VectToChar
 type VectToChar = GlobalData -> Vector2 -> Char
@@ -57,7 +62,7 @@ hBounderyChar = '~'
 shadeChars :: [Char]
 shadeChars = " `.*+&$@#"
 
-commandList :: [(StrCommand, (Command, ArgDescription, String))]
+commandList :: [(StrCommand, (Command, ArgDescription, CmdDescription))]
 commandList = [("draw", (draw, "draw", "Redraws the plot to the screen.")),
                ("plot", (plot, "plot (args)", "Sets the function defining which points to plot.\nPossible arguments:\n" ++ show (map (sndTriple . snd) plotList))),
 
@@ -77,7 +82,7 @@ commandList = [("draw", (draw, "draw", "Redraws the plot to the screen.")),
                ("help", (help, "help [command]", "Prints a description of the specified command and its arguments. Omitting the arguments lists available commands."))
                ]
 
-plotList :: [(StrCommand, (PlotCommand, ArgDescription, String))]
+plotList :: [(StrCommand, (PlotCommand, ArgDescription, CmdDescription))]
 plotList = [("mandelbrot", (plotMBSet, "plot mandelbrot", "Plots the Mandelbrot set over the complex plane.\nTag -shade adds shading based on time to diverge.")),
             ("sierpinski", (plotSierpinski, "plot sierpinski", "Work in progress. Plots the Sierpinski triangle within the unit square, calculated as an iterated function system.\n")),
             ("juliaset", (plotJuliaSet, "plot juliaset (Complex c)", "Given a complex value (using a:+b notation), plots the filled julia set of z^2+c over the complex plane.\n"
@@ -434,7 +439,7 @@ vtcJuliaSetShaded c gd@GD{getIters=maxIters} (V2 x y)
    where itersToEscape = length . takeWhile (\z -> magnitude z < 2) . take maxIters $ jSequence c (x:+y)
          jSequence c z = z:(jSequence c $ z^2 + c)
 
---Sierpinski triangle (On hold - random)
+--Sierpinski triangle (WIP - random)
 
 plotSierpinski :: PlotCommand
 plotSierpinski gd args = Right vtcSierpinski
@@ -444,10 +449,12 @@ vtcSierpinski gd v@(V2 x y)
   | x<0 || x>1 || y<0 || y>1 = minShadeChar
   | any (withinRange gd v) $ truncatedList gd = maxShadeChar
   | otherwise = minShadeChar
-truncatedList gd = take (getIters gd) $ sierpinskiList'  --where
-withinRange gd (V2 x1 y1) (V2 x2 y2) = abs (x2-x1) <= (pxlW gd) && abs (y2-y1) <= (pxlH gd)  --where
+truncatedList gd = take iters $ drop iters sierpinskiList'
+    where iters' = 10 * (getIters gd)
+withinRange gd (V2 x1 y1) (V2 x2 y2) = abs (x2-x1) <= width && abs (y2-y1) <= height
+    where (width, height) = (pxlW gd, pxlH gd)
 
-sierpinskiList :: Vector2 -> [Vector2]
+sierpinskiList :: Vector2 -> a -> [Vector2]
 sierpinskiList v = v : (sierpinskiList . fst $ nextSierpinski (v, 2))
 
 sierpinskiList' = sierpinskiList (V2 0.98356032478956 0.123845769574862)
@@ -461,9 +468,4 @@ nextSierpinski (v@(V2 x y), n)
         trans1 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.5 0)
         trans2 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.25 ((sqrt 3)/4))
 
---rand x = ( (round x*1000) * 6146 + 1223) `mod` 1229          ---WIP
-rand n
-  | n < length rands = rands !! n
-  | otherwise = 0
 
-rands = [0,2,2,1,0,1,0,1,0,0,1,1,0,2,0,0,2,2,0,2,2,1,2,0,0,1,2,0,2,1,0,0]
