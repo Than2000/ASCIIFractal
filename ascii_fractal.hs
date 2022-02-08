@@ -51,7 +51,7 @@ hAxisTickChar = '|'
 vAxisMinChar  = 'V'
 vAxisMaxChar  = '^'
 vAxisChar     = '|'
-vAxisTickChar = '-'
+vAxisTickChar = '~'
 maxShadeChar  = '#'
 minShadeChar  = ' '
 vBounderyChar = '|'
@@ -116,12 +116,12 @@ rejectCommand gd [strCmd] = do
   putStrLn "Use the command \"help\" to see a list of available commands."
   getCommand gd []
 rejectCommand gd args = do
-  putStrLn $ "No such command.\nUse the command \"help\" to see a list of available commands."
+  putStrLn "No such command.\nUse the command \"help\" to see a list of available commands."
   getCommand gd []
 
 rejectArgs :: Command
 rejectArgs gd args = do
-  putStrLn $ "Invalid arguments: " ++ (unwords args) ++ "\nUse the command \"help [command]\" for command syntax."
+  putStrLn $ "Invalid arguments: " ++ unwords args ++ "\nUse the command \"help [command]\" for command syntax."
   getCommand gd []
 
 
@@ -145,14 +145,14 @@ plot gd args@(strPlot:args') = do
       failureAction                              ---------
     else do
       let Right command = plotCmd gd args'
-      draw (setVectToChar gd $ command) [""]
+      draw (setVectToChar gd command) [""]
 plot gd args = help gd $ "plot":args
 
 zoom :: Command
 zoom gd [] = draw (setPlotLoc gd $ getPlotLoc defaultGD) []
 zoom gd args
-  | head args == "in" = zoom gd $ ["2"] ++ (tail args)
-  | head args == "out" = zoom gd $ ["0.5"] ++ (tail args)
+  | head args == "in" = zoom gd $ "2" : tail args
+  | head args == "out" = zoom gd $ "0.5" : tail args
   | otherwise = do
     let mDouble = readMaybe (head args) :: Maybe Double
     case mDouble of Nothing -> rejectArgs gd args
@@ -161,7 +161,7 @@ zoom gd args
     return ()
 
 shift :: Command
-shift gd@( GD{getPlotLoc=(v1, v2)} ) args@(dxStr:dyStr:args')
+shift gd@ GD{getPlotLoc=(v1, v2)} args@(dxStr:dyStr:args')
   | isNothing (readMaybe dxStr :: Maybe Double) = rejectArgs gd args
   | isNothing (readMaybe dyStr :: Maybe Double) = rejectArgs gd args
   | otherwise = draw (setPlotLoc gd (v1 `vPlus` d, v2 `vPlus` d)) args'
@@ -170,12 +170,12 @@ shift gd args = rejectArgs gd args
 
 center :: Command
 center gd [] = center gd ["0","0"]
-center gd@( GD{getPlotLoc=(v1, v2)} ) args@(xStr:yStr:args')
+center gd@ GD{getPlotLoc=(v1, v2)} args@(xStr:yStr:args')
   | isNothing (readMaybe xStr :: Maybe Double) = rejectArgs gd args
   | isNothing (readMaybe yStr :: Maybe Double) = rejectArgs gd args
   | otherwise = shift gd $ [show dx, show dy] ++ args'
       where (V2 dx dy) = newCenter `vMinus` currentCenter
-            currentCenter = (midPt v1 v2)
+            currentCenter = midPt v1 v2
             newCenter = V2 (read xStr :: Double) (read yStr :: Double)
 center gd args = rejectArgs gd args
 
@@ -203,10 +203,10 @@ cutoff gd args@(strIters:args')
     where iters = read strIters :: Int
 
 toggleAxes :: Command
-toggleAxes gd@( GD{getAxesShown=axesShown} ) args = draw (setAxesShown gd (not axesShown)) args
+toggleAxes gd@ GD{getAxesShown=axesShown} = draw (setAxesShown gd (not axesShown))
 
 reload :: Command
-reload _ args = draw defaultGD args
+reload _ = draw defaultGD
 
 info :: Command
 info gd args = do
@@ -214,9 +214,9 @@ info gd args = do
   putStrLn $ "Window size: "++(show . fst . getWindowSize $ gd)++"x"++(show . snd . getWindowSize $ gd)
   let (xMin, yMin) = (getX . fst . getPlotLoc $ gd, getY . fst . getPlotLoc $ gd)
   let (xMax, yMax) = (getX . snd . getPlotLoc $ gd, getY . snd . getPlotLoc $ gd)
-  putStrLn $ "Plot location (bounds): " ++ (show xMin) ++ " < x < " ++ (show xMax) ++ ",  " ++ (show yMin) ++ " < y < " ++ (show yMax)
-  putStrLn $ "Cutoff point (number of iterations): " ++ (show $ getIters gd)
-  putStrLn $ "Axes shown: " ++ (show $ getAxesShown gd)
+  putStrLn $ "Plot location (bounds): " ++ show xMin ++ " < x < " ++ show xMax ++ ",  " ++ show yMin ++ " < y < " ++ show yMax
+  putStrLn $ "Cutoff point (number of iterations): " ++ show (getIters gd)
+  putStrLn $ "Axes shown: " ++ show (getAxesShown gd)
   getCommand gd []
 
 quit :: Command
@@ -263,22 +263,22 @@ setAxesShown :: GlobalData -> Bool -> GlobalData
 setAxesShown (GD windowSize tickSizes plotLoc iters _ vectToChar) axesShown = GD windowSize tickSizes plotLoc iters axesShown vectToChar
 
 setVectToChar :: GlobalData -> VectToChar -> GlobalData
-setVectToChar (GD windowSize tickSizes plotLoc iters axesShown _) vectToChar = GD windowSize tickSizes plotLoc iters axesShown vectToChar
+setVectToChar (GD windowSize tickSizes plotLoc iters axesShown _) = GD windowSize tickSizes plotLoc iters axesShown
 
 pxlW :: GlobalData -> Double
-pxlW gd = ((getX vMax) - (getX vMin)) / (fromIntegral screenWidth)
+pxlW gd = (getX vMax - getX vMin) / fromIntegral screenWidth
   where (screenWidth, _) = getWindowSize gd
         (vMin, vMax) = getPlotLoc gd
 
 pxlH :: GlobalData -> Double
-pxlH gd = ((getY vMax) - (getY vMin)) / (fromIntegral screenHeight)
+pxlH gd = (getY vMax - getY vMin) / fromIntegral screenHeight
   where (_, screenHeight) = getWindowSize gd
         (vMin, vMax) = getPlotLoc gd
 
 zoomGD :: GlobalData -> Double -> GlobalData
 zoomGD gd@GD{getPlotLoc=(v1, v2)} c = setPlotLoc gd (v1', v2')
-  where v1' = (vPlus) (midPt v1 v2) . vScale (1/c) $ v1 `vMinus` (midPt v1 v2)
-        v2' = (vPlus) (midPt v1 v2) . vScale (1/c) $ v2 `vMinus` (midPt v1 v2)
+  where v1' = vPlus (midPt v1 v2) . vScale (1/c) $ v1 `vMinus` midPt v1 v2
+        v2' = vPlus (midPt v1 v2) . vScale (1/c) $ v2 `vMinus` midPt v1 v2
 
 
 --Vector2 functions
@@ -320,7 +320,7 @@ hRange gd = [ xMin + i*dx | i <- [0..width] ]
         xMax = getX . snd . getPlotLoc $ gd
 
 vectRow :: GlobalData -> Double -> [Vector2]
-vectRow gd y = map (\x -> V2 x y) $ hRange gd
+vectRow gd y = map (`V2` y) $ hRange gd
 
 vRange :: GlobalData -> [Double]
 vRange gd = reverse [ yMin + i*dy | i <- [0..height] ]
@@ -330,14 +330,14 @@ vRange gd = reverse [ yMin + i*dy | i <- [0..height] ]
         yMax = getY . snd . getPlotLoc $ gd
 
 vectArray :: GlobalData -> [[Vector2]]
-vectArray gd = map (\y -> vectRow gd y) $ vRange gd
+vectArray gd = map (vectRow gd) $ vRange gd
 
 asciiArray :: GlobalData -> [[Char]]
 asciiArray gd = addBoundery . map (map (vectToAscii gd)) $ vectArray gd
 
 addBoundery :: [[Char]] -> [[Char]]
-addBoundery array = [hBoundery] ++ (addVBoundery array) ++ [hBoundery]
-  where hBoundery = minShadeChar : (replicate (length . head $ array) hBounderyChar) ++ [minShadeChar]
+addBoundery array = [hBoundery] ++ addVBoundery array ++ [hBoundery]
+  where hBoundery = minShadeChar : replicate (length . head $ array) hBounderyChar ++ [minShadeChar]
         addVBoundery array = map (\row -> vBounderyChar : row ++ [vBounderyChar] ) array
 
 
@@ -347,29 +347,29 @@ vectToAscii gd v@(V2 x y)
   | onXAxis && onYAxis                     = originChar
 
   -- x-axis
-  | onXAxis && abs (x-xMin) <= (pxlW gd)/2 = hAxisMinChar
-  | onXAxis && abs (x-xMax) <= (pxlW gd)/2 = hAxisMaxChar
+  | onXAxis && abs (x-xMin) <= pxlW gd / 2 = hAxisMinChar
+  | onXAxis && abs (x-xMax) <= pxlW gd / 2 = hAxisMaxChar
   | onXTick                                = hAxisTickChar
   | onXAxis                                = hAxisChar
 
   -- y-axis
-  | onYAxis && abs (y-yMin) <= (pxlH gd)/2 = vAxisMinChar
-  | onYAxis && abs (y-yMax) <= (pxlH gd)/2 = vAxisMaxChar
+  | onYAxis && abs (y-yMin) <= pxlH gd / 2 = vAxisMinChar
+  | onYAxis && abs (y-yMax) <= pxlH gd / 2 = vAxisMaxChar
   | onYTick                                = vAxisTickChar
   | onYAxis                                = vAxisChar
   
-  | otherwise                              = (getVectToChar gd) gd v
+  | otherwise                              = getVectToChar gd gd v
 
   where (scrnW,scrnH) = getWindowSize gd
         (vMin, vMax) = getPlotLoc gd
-        onXAxis = getAxesShown gd && abs y < (pxlH gd)/2
-        onYAxis = getAxesShown gd && abs x < (pxlW gd)/2
-        onXTick = onXAxis && abs (x - rndX) < (pxlW gd)/2      --WIP
-        onYTick = onYAxis && abs (y - rndY) < (pxlH gd)/2      --WIP
+        onXAxis = getAxesShown gd && abs y < pxlH gd / 2
+        onYAxis = getAxesShown gd && abs x < pxlW gd / 2
+        onXTick = onXAxis && abs (x - rndX) < pxlW gd / 2      --WIP
+        onYTick = onYAxis && abs (y - rndY) < pxlH gd / 2      --WIP
         [rndX, rndY] = map (fromIntegral . round) [x, y]       --WIP rewrite as nearest tick
         (xMin, yMin) = (getX vMin, getY vMin)
         (xMax, yMax) = (getX vMax, getY vMax)
-        onCursor = mag (v `vMinus` (midPt vMin vMax)) <= (pxlW gd)/2
+        onCursor = mag (v `vMinus` midPt vMin vMax) <= pxlW gd / 2
 
 
 --Mandelbrot set
@@ -385,7 +385,7 @@ vtcMBSet gd@GD{getIters=iters} (V2 x y)
   | otherwise = minShadeChar
    where isInSet = all (\z -> magnitude z < 2) . take iters $ mSequence c (0:+0)
          c = x:+y
-         mSequence c z = z:(mSequence c $ mFunc c z)
+         mSequence c z = z : mSequence c (mFunc c z)
          mFunc c z = z^2 + c
 
 vtcMBSetShaded :: VectToChar
@@ -401,7 +401,7 @@ vtcMBSetShaded gd@GD{getIters=maxIters} (V2 x y)
   | otherwise = minShadeChar
    where itersToEscape = length . takeWhile (\z -> magnitude z < 2) . take maxIters $ mSequence c (0:+0)
          c = x:+y
-         mSequence c z = z:(mSequence c $ z^2 + c)
+         mSequence c z = z : mSequence c (z^2 + c)
 
 
 --Julia Sets
@@ -421,7 +421,7 @@ vtcJuliaSet c gd@GD{getIters=iters} (V2 x y)
   | isInSet   = maxShadeChar
   | otherwise = minShadeChar
    where isInSet = all (\z -> magnitude z < 2) . take iters $ jSequence c (x:+y)
-         jSequence c z = z:(jSequence c $ z^2 + c)
+         jSequence c z = z : jSequence c (z^2 + c)
 
 vtcJuliaSetShaded :: Complex Double -> VectToChar
 vtcJuliaSetShaded c gd@GD{getIters=maxIters} (V2 x y)
@@ -435,7 +435,7 @@ vtcJuliaSetShaded c gd@GD{getIters=maxIters} (V2 x y)
   | itersToEscape >= (1*maxIters) `div` 8 = shadeChars !! 1
   | otherwise = minShadeChar
    where itersToEscape = length . takeWhile (\z -> magnitude z < 2) . take maxIters $ jSequence c (x:+y)
-         jSequence c z = z:(jSequence c $ z^2 + c)
+         jSequence c z = z : jSequence c (z^2 + c)
 
 --Sierpinski triangle (WIP - random)
 
@@ -447,30 +447,31 @@ vtcSierpinski gd v@(V2 x y)
   | x<0 || x>1 || y<0 || y>1 = minShadeChar
   | any (withinRange gd v) $ truncatedList gd = maxShadeChar
   | otherwise = minShadeChar
-truncatedList gd = take iters' $ drop iters' $ sierpinskiList'    --Hardcoded parameter
-          where iters' = 10 * (getIters gd)
+truncatedList gd = take iters' $ drop iters' sierpinskiList'    --Hardcoded parameter
+          where iters' = 10 * getIters gd
 withinRange gd (V2 x1 y1) (V2 x2 y2) = abs (x2-x1) <= width && abs (y2-y1) <= height
-    where (width, height) = (0.75*(pxlW gd), (0.75*pxlH gd))    --Hardcoded parameter
+    where (width, height) = (0.75 * pxlW gd, 0.75 * pxlH gd)    --Hardcoded parameter
 
 sierpinskiList :: (Vector2, Int) -> [Vector2]
-sierpinskiList (v, n) = v : (sierpinskiList $ nextSierpinski (v, n))
+sierpinskiList (v, n) = v : sierpinskiList (nextSierpinski (v, n))
 
 sierpinskiList' = sierpinskiList (V2 0.5 0.5, 0) --Initial values
 
 nextSierpinski :: (Vector2, Int) -> (Vector2, Int)
 nextSierpinski (v@(V2 x y), n)
-  | rand n `mod` 3 == 0 = (applyTransformation (trans0) v, n+1)
-  | rand n `mod` 3 == 1 = (applyTransformation (trans1) v, n+1)
-  | rand n `mod` 3 == 2 = (applyTransformation (trans2) v, n+1)
+  | rand n `mod` 3 == 0 = (applyTransformation trans0 v, n+1)
+  | rand n `mod` 3 == 1 = (applyTransformation trans1 v, n+1)
+  | rand n `mod` 3 == 2 = (applyTransformation trans2 v, n+1)
+nextSierpinski _ = (V2 0 0, 0)
 
 trans0 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0 0)
 trans1 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.5 0)
-trans2 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.25 ((sqrt 3)/4))
+trans2 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.25 (sqrt 3 / 4))
 
 
 --Generates a pseudorandom digit
 rand :: Int -> Int
-rand n = randList !! (n `mod` (length randList))
+rand n = randList !! (n `mod` length randList)
 
 
 randList = [3,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,2,7,9,5,0,2,8,8,4,1,9,7,
