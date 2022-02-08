@@ -1,10 +1,11 @@
+module AsciiFractal (afMain) where
 import Data.Complex
 import Data.Maybe
 import Data.Either
 --import System.Random
 import Text.Read
 
-main = do
+afMain = do
   putStrLn "Compiled."
   center defaultGD ["0", "0"]
 
