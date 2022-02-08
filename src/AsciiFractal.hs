@@ -1,9 +1,14 @@
 module AsciiFractal (afMain) where
+
 import Data.Complex
 import Data.Maybe
 import Data.Either
 --import System.Random
 import Text.Read
+
+--TODO Implement aliases or "did you mean" suggestions, ex. q => quit
+--TODO Finish sierpinski
+--TODO Add relative-to-screen-size translation
 
 afMain = do
   putStrLn "Compiled."
@@ -35,7 +40,7 @@ type VectToChar = GlobalData -> Vector2 -> Char
 
 
 defaultGD :: GlobalData
-defaultGD = GD (100,30) (1.0, 1.0) (V2 (-1.5) (-1), V2 1.5 1) 50 True vtcMBSet True
+defaultGD = GD (100,30) ((1.0, 1.0)) (V2 (-1.5) (-1), V2 1.5 1) 50 True vtcMBSet True
 
 charWidth :: Double
 charWidth = 0.3
