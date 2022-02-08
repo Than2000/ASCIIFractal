@@ -17,7 +17,7 @@ import Text.Read
 
 afMain = do
   putStrLn "Compiled."
-  putStrLn "\\nnWelcome to the ASCII-Based Fractal Generator!\nType \"help\" to see available commands, or type \"draw\" to begin."
+  putStrLn "\n\nWelcome to the ASCII-Based Fractal Generator!\nType \"help\" to see available commands, or type \"draw\" to begin."
   run defaultGD ["0", "0"]
 
 
