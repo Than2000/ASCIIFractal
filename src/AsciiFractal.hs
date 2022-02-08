@@ -6,9 +6,14 @@ import Data.Either
 --import System.Random
 import Text.Read
 
---TODO Implement aliases or "did you mean" suggestions, ex. q => quit
---TODO Finish sierpinski
+--TODO Fix Command prompts
 --TODO Add relative-to-screen-size translation
+--TODO Implement aliases or "did you mean" suggestions, ex. q => quit
+--TODO Display help messages within rejectArgs
+--TODO Finish sierpinski
+--TODO Welcome message
+--TODO? Auto-detect screen size?
+--TODO? Use different ascii chars to represent smaller regions (ex. dot if only one neighbor succeeded)
 
 afMain = do
   putStrLn "Compiled."
