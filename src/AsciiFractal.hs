@@ -11,13 +11,17 @@ import Text.Read
 --TODO Implement aliases or "did you mean" suggestions, ex. q => quit
 --TODO Display help messages within rejectArgs
 --TODO Finish sierpinski
---TODO Welcome message
+--TODO Better welcome message
+--TODO Command on its own displays value rather than reset
+--TODO Add bigscreen zoom shortcut
+--TODO Display center location on info and on screen
+--TODO Preset circles in MBSet? (add full reclaculate option)
 --TODO? Auto-detect screen size?
 --TODO? Use different ascii chars to represent smaller regions (ex. dot if only one neighbor succeeded)
 
 afMain = do
   putStrLn "Compiled."
-  putStrLn "\n\nWelcome to the ASCII-Based Fractal Generator!\nType \"help\" to see available commands, or type \"draw\" to begin."
+  putStrLn "\  n\nWelcome to the ASCII-Based Fractal Generator!\nType \"help\" to see available commands, or type \"draw\" to begin."
   run defaultGD ["0", "0"]
 
 
