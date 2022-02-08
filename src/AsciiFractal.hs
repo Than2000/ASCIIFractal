@@ -17,7 +17,8 @@ import Text.Read
 
 afMain = do
   putStrLn "Compiled."
-  center defaultGD ["0", "0"]
+  putStrLn "\\nnWelcome to the ASCII-Based Fractal Generator!\nType \"help\" to see available commands, or type \"draw\" to begin."
+  run defaultGD ["0", "0"]
 
 
 --Datatypes/typeclasses/etc.
@@ -45,7 +46,7 @@ type VectToChar = GlobalData -> Vector2 -> Char
 
 
 defaultGD :: GlobalData
-defaultGD = GD (100,30) (1.0, 1.0) (V2 (-1.5) (-1), V2 1.5 1) 50 True vtcMBSet True
+defaultGD = GD (100,30) (1.0, 1.0) (V2 (-1.5) (-1), V2 1.5 1) 50 True vtcMBSet False
 
 charWidth :: Double
 charWidth = 0.3
