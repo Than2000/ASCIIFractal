@@ -1,1 +1,1 @@
-# ASCIIFractal
+# ascii-fractal
