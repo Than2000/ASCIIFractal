@@ -124,7 +124,7 @@ rejectCommand gd args = do
 
 rejectArgs :: Command
 rejectArgs gd args = do
-  putStrLn "Invalid arguments: " ++ unwords args ++ "\nUse the command \"help [command]\" for command syntax."
+  putStrLn $ "Invalid arguments: " ++ unwords args ++ "\nUse the command \"help [command]\" for command syntax."
   getCommand gd []
 
 run :: Command
@@ -162,8 +162,8 @@ plot gd args = help gd $ "plot":args
 zoom :: Command
 zoom gd [] = run (setPlotLoc gd $ getPlotLoc defaultGD) []
 zoom gd args
-  | head args == "in" = zoom gd "2" : tail args
-  | head args == "out" = zoom gd "0.5" : tail args
+  | head args == "in" = zoom gd $ "2" : tail args
+  | head args == "out" = zoom gd $ "0.5" : tail args
   | otherwise = do
     let mDouble = readMaybe (head args) :: Maybe Double
     case mDouble of Nothing -> rejectArgs gd args
@@ -479,7 +479,7 @@ nextSierpinski (v@(V2 x y), n)
   | otherwise = (applyTransformation trans2 v, n+1)
   where trans0 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0 0)
         trans1 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.5 0)
-        trans2 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.25 sqrt 3 / 4)
+        trans2 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.25 $ sqrt 3 / 4)
 
 --rand x = ( (round x*1000) * 6146 + 1223) `mod` 1229          ---WIP
 rand n
