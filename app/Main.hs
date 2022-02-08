@@ -1,6 +1,7 @@
 module Main where
 
 import Lib
+import AsciiFractal
 
 main :: IO ()
-main = someFunc
+main = afMain

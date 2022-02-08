@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      AsciiFractal
       Lib
   other-modules:
       Paths_ascii_fractal
