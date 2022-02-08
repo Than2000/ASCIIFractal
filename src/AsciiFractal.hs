@@ -40,7 +40,7 @@ type VectToChar = GlobalData -> Vector2 -> Char
 
 
 defaultGD :: GlobalData
-defaultGD = GD (100,30) ((1.0, 1.0)) (V2 (-1.5) (-1), V2 1.5 1) 50 True vtcMBSet True
+defaultGD = GD (100,30) (1.0, 1.0) (V2 (-1.5) (-1), V2 1.5 1) 50 True vtcMBSet True
 
 charWidth :: Double
 charWidth = 0.3
@@ -122,7 +122,7 @@ rejectArgs gd args = do
   getCommand gd []
 
 run :: Command
-run gd@( GD{getAutodraw=autodraw} ) _ = do
+run gd@ GD{getAutodraw=autodraw} _ = do
   if autodraw then do
     draw gd []
   else do
@@ -166,7 +166,7 @@ zoom gd args
     return ()
 
 shift :: Command
-shift gd@( GD{getPlotLoc=(v1, v2)} ) args@(dxStr:dyStr:args')
+shift gd@ GD{getPlotLoc=(v1, v2)} args@(dxStr:dyStr:args')
   | isNothing (readMaybe dxStr :: Maybe Double) = rejectArgs gd args
   | isNothing (readMaybe dyStr :: Maybe Double) = rejectArgs gd args
   | otherwise = run (setPlotLoc gd (v1 `vPlus` d, v2 `vPlus` d)) args'
@@ -175,7 +175,7 @@ shift gd args = rejectArgs gd args
 
 center :: Command
 center gd [] = center gd ["0","0"]
-center gd@( GD{getPlotLoc=(v1, v2)} ) args@(xStr:yStr:args')
+center gd@ GD{getPlotLoc=(v1, v2)} args@(xStr:yStr:args')
   | isNothing (readMaybe xStr :: Maybe Double) = rejectArgs gd args
   | isNothing (readMaybe yStr :: Maybe Double) = rejectArgs gd args
   | otherwise = shift gd $ [show dx, show dy] ++ args'
@@ -208,13 +208,13 @@ cutoff gd args@(strIters:args')
     where iters = read strIters :: Int
 
 toggleAxes :: Command
-toggleAxes gd@( GD{getAxesShown=axesShown} ) args = run (setAxesShown gd (not axesShown)) args
+toggleAxes gd@ GD{getAxesShown=axesShown} = run (setAxesShown gd (not axesShown))
 
 toggleAutodraw :: Command
-toggleAutodraw gd@( GD{getAutodraw=autodraw} ) args = run (setAutodraw gd (not autodraw)) []
+toggleAutodraw gd@ GD{getAutodraw=autodraw} = run (setAutodraw gd (not autodraw))
 
 resetValues :: Command --Shell command is "reset" - function name is resetValues instead because reset is already a declared funtion from Read.
-resetValues _ args = run defaultGD args
+resetValues _ = run defaultGD
 
 info :: Command  --NYI: info for "plot" command
 info gd args = do
@@ -274,7 +274,7 @@ setVectToChar :: GlobalData -> VectToChar -> GlobalData
 setVectToChar (GD windowSize tickSizes plotLoc iters axesShown _ autodraw) vectToChar = GD windowSize tickSizes plotLoc iters axesShown vectToChar autodraw
 
 setAutodraw :: GlobalData -> Bool -> GlobalData
-setAutodraw (GD windowSize tickSizes plotLoc iters axesShown vectToChar _) autodraw = GD windowSize tickSizes plotLoc iters axesShown vectToChar autodraw
+setAutodraw (GD windowSize tickSizes plotLoc iters axesShown vectToChar _) = GD windowSize tickSizes plotLoc iters axesShown vectToChar
 
 pxlW :: GlobalData -> Double
 pxlW gd = ((getX vMax) - (getX vMin)) / (fromIntegral screenWidth)
@@ -288,8 +288,8 @@ pxlH gd = ((getY vMax) - (getY vMin)) / (fromIntegral screenHeight)
 
 zoomGD :: GlobalData -> Double -> GlobalData
 zoomGD gd@GD{getPlotLoc=(v1, v2)} c = setPlotLoc gd (v1', v2')
-  where v1' = (vPlus) (midPt v1 v2) . vScale (1/c) $ v1 `vMinus` (midPt v1 v2)
-        v2' = (vPlus) (midPt v1 v2) . vScale (1/c) $ v2 `vMinus` (midPt v1 v2)
+  where v1' = vPlus (midPt v1 v2) . vScale (1/c) $ v1 `vMinus` (midPt v1 v2)
+        v2' = vPlus (midPt v1 v2) . vScale (1/c) $ v2 `vMinus` (midPt v1 v2)
 
 
 --Vector2 functions
@@ -468,9 +468,9 @@ sierpinskiList' = sierpinskiList (V2 0.98356032478956 0.123845769574862)
 
 nextSierpinski :: (Vector2, Int) -> (Vector2, Int)
 nextSierpinski (v@(V2 x y), n)
-  | rand n `mod` 3 == 0 = (applyTransformation (trans0) v, n+1)
-  | rand n `mod` 3 == 1 = (applyTransformation (trans1) v, n+1)
-  | otherwise = (applyTransformation (trans2) v, n+1)
+  | rand n `mod` 3 == 0 = (applyTransformation trans0 v, n+1)
+  | rand n `mod` 3 == 1 = (applyTransformation trans1 v, n+1)
+  | otherwise = (applyTransformation trans2 v, n+1)
   where trans0 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0 0)
         trans1 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.5 0)
         trans2 = Transformation (0.5, 0.0, 0.0, 0.5) (V2 0.25 ((sqrt 3)/4))
