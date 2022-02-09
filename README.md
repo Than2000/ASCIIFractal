@@ -1,5 +1,1 @@
 # ascii-fractal
-
-
-
-12
