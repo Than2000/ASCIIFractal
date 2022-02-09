@@ -21,8 +21,7 @@ import Text.Read
 --TODO? Use different ascii chars to represent smaller regions (ex. dot if only one neighbor succeeded)
 
 afMain = do
-  putStrLn "Compiled."
-  putStrLn "\  n\nWelcome to the ASCII-Based Fractal Generator!\nType \"help\" to see available commands, or type \"draw\" to begin."
+  putStrLn "\n\nWelcome to the ASCII Fractal Generator!\nType \"help\" to see available commands."
   run defaultGD ["0", "0"]
 
 
