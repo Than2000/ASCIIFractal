@@ -16,6 +16,7 @@ import Text.Read
 --TODO Add bigscreen zoom shortcut
 --TODO Display center location on info and on screen
 --TODO Preset circles in MBSet? (add full reclaculate option)
+--TODO Show juliaset c in info
 --TODO? Auto-detect screen size?
 --TODO? Use different ascii chars to represent smaller regions (ex. dot if only one neighbor succeeded)
 
